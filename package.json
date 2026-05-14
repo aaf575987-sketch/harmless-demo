@@ -8,9 +8,12 @@
     "prepare": "node scripts/prepare.js",
     "postinstall": "node scripts/postinstall.js"
   },
-  "files" : [
+  "files": [
     "index.js",
     "scripts"
   ],
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "github:lodash/lodash"
+  }
 }
