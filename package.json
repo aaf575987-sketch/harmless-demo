@@ -1,0 +1,16 @@
+{
+  "name": "harmless-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node -e \"console.log(require('./index').hello())\"",
+    "prepare": "node scripts/prepare.js",
+    "postinstall": "node scripts/postinstall.js"
+  },
+  "files" : [
+    "index.js",
+    "scripts"
+  ],
+  "license": "ISC"
+}
