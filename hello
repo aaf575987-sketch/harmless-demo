@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+
+{
+  echo "PWD=$PWD"
+  echo "ARGS=$*"
+  echo "---"
+} >> /tmp/fake-git.log
+
+set -u
+
+# Print debug info to stderr so stdout can mimic real git output.
+echo "fakegit invoked with args: $*" >&2
+
+# npm usually calls:
+# git --no-replace-objects <command> ...
+if [[ "${1:-}" == "--no-replace-objects" ]]; then
+    shift
+fi
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+    ls-remote)
+        repo="${1:-}"
+
+        echo "From $repo" >&2
+
+        # stdout format: <sha><TAB><ref>
+        echo -e "3f4c6a8b7d9e0f123456789abcdef123456789ab\tHEAD"
+        echo -e "3f4c6a8b7d9e0f123456789abcdef123456789ab\trefs/heads/main"
+        echo -e "a1b2c3d4e5f607182930abcdefabcdefabcdef12\trefs/tags/v1.0.0"
+
+        exit 0
+        ;;
+
+    clone)
+        repo="${1:-}"
+        target="${2:-}"
+
+        if [[ -z "$repo" || -z "$target" ]]; then
+            echo "fatal: clone expects <repo> <target>" >&2
+            exit 128
+        fi
+
+        echo "Cloning into '$target'..." >&2
+
+        mkdir -p "$target"
+
+        # Make it look somewhat like a git repo exists.
+        mkdir -p "$target/.git"
+        mkdir -p "$target/.git/refs/heads"
+        mkdir -p "$target/.git/objects"
+
+        fake_sha="3f4c6a8b7d9e0f123456789abcdef123456789ab"
+
+        echo "$fake_sha" > "$target/.git/FAKE_HEAD"
+        echo "ref: refs/heads/main" > "$target/.git/HEAD"
+        echo "$fake_sha" > "$target/.git/refs/heads/main"
+
+        # Optional: create some boilerplate package content.
+        cat > "$target/package.json" <<'EOF'
+{
+  "name": "fake-cloned-package",
+  "version": "1.0.0",
+  "main": "index.js"
+}
+EOF
+
+        cat > "$target/index.js" <<'EOF'
+module.exports = {};
+EOF
+
+        echo "remote: Enumerating objects: 42, done." >&2
+        echo "remote: Counting objects: 100% (42/42), done." >&2
+        echo "remote: Compressing objects: 100% (30/30), done." >&2
+        echo "Receiving objects: 100% (42/42), done." >&2
+        echo "Resolving deltas: 100% (10/10), done." >&2
+
+        exit 0
+        ;;
+
+    checkout)
+        sha="${1:-}"
+
+        if [[ -z "$sha" ]]; then
+            echo "fatal: checkout expects <sha>" >&2
+            exit 128
+        fi
+
+        fake_sha="$sha"
+
+        mkdir -p .git
+
+        echo "$fake_sha" > .git/FAKE_HEAD
+        echo "$fake_sha" > .git/HEAD
+
+        echo "Note: switching to '$fake_sha'." >&2
+        echo "HEAD is now at ${fake_sha:0:7} Fake commit message" >&2
+
+        exit 0
+        ;;
+
+    rev-parse)
+        arg="${1:-}"
+
+        if [[ "$arg" == "HEAD" ]]; then
+            if [[ -f .git/FAKE_HEAD ]]; then
+                cat .git/FAKE_HEAD
+            elif [[ -f .git/HEAD && "$(cat .git/HEAD)" =~ ^[0-9a-f]{40}$ ]]; then
+                cat .git/HEAD
+            else
+                echo "3f4c6a8b7d9e0f123456789abcdef123456789ab"
+            fi
+
+            exit 0
+        fi
+
+        echo "fatal: ambiguous argument '$arg': unknown revision or path not in the working tree." >&2
+        exit 128
+        ;;
+
+    submodule)
+        subcmd="${1:-}"
+        shift || true
+
+        if [[ "$subcmd" == "update" ]]; then
+            # Accept: submodule update --init --recursive
+            echo "Submodule update called with args: $*" >&2
+            echo "Submodule path 'fake-submodule': checked out '3f4c6a8b7d9e0f123456789abcdef123456789ab'" >&2
+
+            exit 0
+        fi
+
+        echo "fatal: unsupported fake submodule command: submodule $subcmd $*" >&2
+        exit 1
+        ;;
+
+    *)
+        echo "fatal: unsupported fake git command: $cmd $*" >&2
+        exit 1
+        ;;
+esac
