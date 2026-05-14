@@ -1,2 +1,2 @@
 #!/usr/bin/bash
-echo "test"
+echo "67676767 yippi 67676767"
