@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
 {
-  echo "PWD=$PWD"
-  echo "ARGS=$*"
-  echo "---"
-} >> /tmp/fake-git.log
+  echo "6767676766766776767 yibbi 66767676767676"
+} >> ~/Testing/victim/67.txt
 
 set -u
 
